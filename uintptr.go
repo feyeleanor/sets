@@ -10,16 +10,24 @@ func (m amap) Len() int {
 	return len(m)
 }
 
-func (m amap) Member(i uintptr) bool {
-	return m[i]
+func (m amap) Member(i interface{}) (r bool) {
+	if i, ok := i.(uintptr); ok {
+		r = m[i]
+	}
+	return
 }
 
-func (m amap) include(v uintptr) {
-	m[v] = true
-}
-
-func (m amap) delete(v uintptr) {
-	delete(m, v)
+func (m amap) Include(v interface{}) {
+	switch v := v.(type) {
+	case []uintptr:
+		for i := len(v) - 1; i > -1; i-- {
+			m[v[i]] = true
+		}
+	case uintptr:
+		m[v] = true
+	default:
+		panic(v)
+	}
 }
 
 func (m amap) Each(f interface{}) {
@@ -36,8 +44,6 @@ func (m amap) Each(f interface{}) {
 				f(k)
 			}
 		}
-	default:
-		panic(f)
 	}
 }
 
@@ -48,10 +54,12 @@ type aset struct {
 
 func ASet(v... uintptr) (r aset) {
 	r.amap = make(amap)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
+}
+
+func (s aset) Empty() Set {
+	return ASet()
 }
 
 func (s aset) String() (t string) {
@@ -63,55 +71,46 @@ func (s aset) String() (t string) {
 	return elements.String()
 }
 
-func (s aset) Intersection(o aset) (r aset) {
-	r.amap = make(amap)
+func (s aset) Intersection(o Set) Set {
+	r := ASet()
 	s.Each(func(v uintptr) {
 		if o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s aset) Union(o aset) (r aset) {
-	r.amap = make(amap)
+func (s aset) Union(o Set) Set {
+	r := ASet()
 	s.Each(func(v uintptr) {
-		r.include(v)
+		r.Include(v)
 	})
 	o.Each(func(v uintptr) {
-		r.include(v)
+		r.Include(v)
 	})
-	return
+	return r
 }
 
-func (s aset) Difference(o aset) (r aset) {
-	r.amap = make(amap)
+func (s aset) Difference(o Set) Set {
+	r := ASet()
 	s.Each(func(v uintptr) {
 		if !o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s aset) SubsetOf(o aset) (r bool) {
-	r = true
-	s.Each(func(v uintptr) {
-		if !o.Member(v) {
-			r = false
-			return
+func (s aset) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v uintptr) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s aset) Equal(o aset) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v uintptr) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }

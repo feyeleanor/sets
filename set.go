@@ -14,12 +14,14 @@ func (m vmap) Member(i interface{}) bool {
 	return m[i]
 }
 
-func (m vmap) include(v interface{}) {
-	m[v] = true
-}
-
-func (m vmap) delete(v interface{}) {
-	delete(m, v)
+func (m vmap) Include(v interface{}) {
+	if x, ok := v.([]interface{}); ok {
+		for i := len(x) - 1; i > -1; i-- {
+			m[x[i]] = true
+		}
+	} else {
+		m[v] = true
+	}
 }
 
 func (m vmap) Each(f interface{}) {
@@ -30,8 +32,6 @@ func (m vmap) Each(f interface{}) {
 				f(k)
 			}
 		}
-	default:
-		panic(f)
 	}
 }
 
@@ -49,63 +49,56 @@ type vset struct {
 	vmap
 }
 
-func Set(v... interface{}) (r vset) {
+func VSet(v... interface{}) (r vset) {
 	r.vmap = make(vmap)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
 }
 
-func (s vset) Intersection(o vset) (r vset) {
-	r.vmap = make(vmap)
+func (s vset) Empty() Set {
+	return VSet()
+}
+
+func (s vset) Intersection(o Set) Set {
+	r := VSet()
 	s.Each(func(v interface{}) {
 		if o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s vset) Union(o vset) (r vset) {
-	r.vmap = make(vmap)
+func (s vset) Union(o Set) Set {
+	r := VSet()
 	s.Each(func(v interface{}) {
-		r.include(v)
+		r.Include(v)
 	})
 	o.Each(func(v interface{}) {
-		r.include(v)
+		r.Include(v)
 	})
-	return
+	return r
 }
 
-func (s vset) Difference(o vset) (r vset) {
-	r.vmap = make(vmap)
+func (s vset) Difference(o Set) Set {
+	r := VSet()
 	s.Each(func(v interface{}) {
 		if !o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s vset) SubsetOf(o vset) (r bool) {
-	r = true
-	s.Each(func(v interface{}) {
-		if !o.Member(v) {
-			r = false
-			return
+func (s vset) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v interface{}) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s vset) Equal(o vset) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v interface{}) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }

@@ -10,16 +10,24 @@ func (m f32map) Len() int {
 	return len(m)
 }
 
-func (m f32map) Member(i float32) bool {
-	return m[i]
+func (m f32map) Member(i interface{}) (r bool) {
+	if i, ok := i.(float32); ok {
+		r = m[i]
+	}
+	return
 }
 
-func (m f32map) include(v float32) {
-	m[v] = true
-}
-
-func (m f32map) delete(v float32) {
-	delete(m, v)
+func (m f32map) Include(v interface{}) {
+	switch v := v.(type) {
+	case []float32:
+		for i := len(v) - 1; i > -1; i-- {
+			m[v[i]] = true
+		}
+	case float32:
+		m[v] = true
+	default:
+		panic(v)
+	}
 }
 
 func (m f32map) Each(f interface{}) {
@@ -36,8 +44,6 @@ func (m f32map) Each(f interface{}) {
 				f(k)
 			}
 		}
-	default:
-		panic(f)
 	}
 }
 
@@ -48,10 +54,12 @@ type f32set struct {
 
 func F32Set(v... float32) (r f32set) {
 	r.f32map = make(f32map)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
+}
+
+func (s f32set) Empty() Set {
+	return F32Set()
 }
 
 func (s f32set) String() (t string) {
@@ -63,55 +71,46 @@ func (s f32set) String() (t string) {
 	return elements.String()
 }
 
-func (s f32set) Intersection(o f32set) (r f32set) {
-	r.f32map = make(f32map)
+func (s f32set) Intersection(o Set) Set {
+	r := F32Set()
 	s.Each(func(v float32) {
 		if o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s f32set) Union(o f32set) (r f32set) {
-	r.f32map = make(f32map)
+func (s f32set) Union(o Set) Set {
+	r := F32Set()
 	s.Each(func(v float32) {
-		r.include(v)
+		r.Include(v)
 	})
 	o.Each(func(v float32) {
-		r.include(v)
+		r.Include(v)
 	})
-	return
+	return r
 }
 
-func (s f32set) Difference(o f32set) (r f32set) {
-	r.f32map = make(f32map)
+func (s f32set) Difference(o Set) Set {
+	r := F32Set()
 	s.Each(func(v float32) {
 		if !o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s f32set) SubsetOf(o f32set) (r bool) {
-	r = true
-	s.Each(func(v float32) {
-		if !o.Member(v) {
-			r = false
-			return
+func (s f32set) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v float32) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s f32set) Equal(o f32set) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v float32) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }

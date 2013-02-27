@@ -10,16 +10,24 @@ func (m u8map) Len() int {
 	return len(m)
 }
 
-func (m u8map) Member(i uint8) bool {
-	return m[i]
+func (m u8map) Member(i interface{}) (r bool) {
+	if i, ok := i.(uint8); ok {
+		r = m[i]
+	}
+	return
 }
 
-func (m u8map) include(v uint8) {
-	m[v] = true
-}
-
-func (m u8map) delete(v uint8) {
-	delete(m, v)
+func (m u8map) Include(v interface{}) {
+	switch v := v.(type) {
+	case []uint8:
+		for i := len(v) - 1; i > -1; i-- {
+			m[v[i]] = true
+		}
+	case uint8:
+		m[v] = true
+	default:
+		panic(v)
+	}
 }
 
 func (m u8map) Each(f interface{}) {
@@ -36,8 +44,6 @@ func (m u8map) Each(f interface{}) {
 				f(k)
 			}
 		}
-	default:
-		panic(f)
 	}
 }
 
@@ -48,10 +54,12 @@ type u8set struct {
 
 func U8Set(v... uint8) (r u8set) {
 	r.u8map = make(u8map)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
+}
+
+func (s u8set) Empty() Set {
+	return U8Set()
 }
 
 func (s u8set) String() (t string) {
@@ -63,55 +71,46 @@ func (s u8set) String() (t string) {
 	return elements.String()
 }
 
-func (s u8set) Intersection(o u8set) (r u8set) {
-	r.u8map = make(u8map)
+func (s u8set) Intersection(o Set) Set {
+	r := U8Set()
 	s.Each(func(v uint8) {
 		if o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s u8set) Union(o u8set) (r u8set) {
-	r.u8map = make(u8map)
+func (s u8set) Union(o Set) Set {
+	r := U8Set()
 	s.Each(func(v uint8) {
-		r.include(v)
+		r.Include(v)
 	})
 	o.Each(func(v uint8) {
-		r.include(v)
+		r.Include(v)
 	})
-	return
+	return r
 }
 
-func (s u8set) Difference(o u8set) (r u8set) {
-	r.u8map = make(u8map)
+func (s u8set) Difference(o Set) Set {
+	r := U8Set()
 	s.Each(func(v uint8) {
 		if !o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s u8set) SubsetOf(o u8set) (r bool) {
-	r = true
-	s.Each(func(v uint8) {
-		if !o.Member(v) {
-			r = false
-			return
+func (s u8set) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v uint8) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s u8set) Equal(o u8set) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v uint8) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }

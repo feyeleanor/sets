@@ -10,16 +10,24 @@ func (m u32map) Len() int {
 	return len(m)
 }
 
-func (m u32map) Member(i uint32) bool {
-	return m[i]
+func (m u32map) Member(i interface{}) (r bool) {
+	if i, ok := i.(uint32); ok {
+		r = m[i]
+	}
+	return
 }
 
-func (m u32map) include(v uint32) {
-	m[v] = true
-}
-
-func (m u32map) delete(v uint32) {
-	delete(m, v)
+func (m u32map) Include(v interface{}) {
+	switch v := v.(type) {
+	case []uint32:
+		for i := len(v) - 1; i > -1; i-- {
+			m[v[i]] = true
+		}
+	case uint32:
+		m[v] = true
+	default:
+		panic(v)
+	}
 }
 
 func (m u32map) Each(f interface{}) {
@@ -36,8 +44,6 @@ func (m u32map) Each(f interface{}) {
 				f(k)
 			}
 		}
-	default:
-		panic(f)
 	}
 }
 
@@ -48,10 +54,12 @@ type u32set struct {
 
 func U32Set(v... uint32) (r u32set) {
 	r.u32map = make(u32map)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
+}
+
+func (s u32set) Empty() Set {
+	return U32Set()
 }
 
 func (s u32set) String() (t string) {
@@ -63,55 +71,46 @@ func (s u32set) String() (t string) {
 	return elements.String()
 }
 
-func (s u32set) Intersection(o u32set) (r u32set) {
-	r.u32map = make(u32map)
+func (s u32set) Intersection(o Set) Set {
+	r := U32Set()
 	s.Each(func(v uint32) {
 		if o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s u32set) Union(o u32set) (r u32set) {
-	r.u32map = make(u32map)
+func (s u32set) Union(o Set) Set {
+	r := U32Set()
 	s.Each(func(v uint32) {
-		r.include(v)
+		r.Include(v)
 	})
 	o.Each(func(v uint32) {
-		r.include(v)
+		r.Include(v)
 	})
-	return
+	return r
 }
 
-func (s u32set) Difference(o u32set) (r u32set) {
-	r.u32map = make(u32map)
+func (s u32set) Difference(o Set) Set {
+	r := U32Set()
 	s.Each(func(v uint32) {
 		if !o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s u32set) SubsetOf(o u32set) (r bool) {
-	r = true
-	s.Each(func(v uint32) {
-		if !o.Member(v) {
-			r = false
-			return
+func (s u32set) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v uint32) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s u32set) Equal(o u32set) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v uint32) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }

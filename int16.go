@@ -10,16 +10,24 @@ func (m i16map) Len() int {
 	return len(m)
 }
 
-func (m i16map) Member(i int16) bool {
-	return m[i]
+func (m i16map) Member(i interface{}) (r bool) {
+	if i, ok := i.(int16); ok {
+		r = m[i]
+	}
+	return
 }
 
-func (m i16map) include(v int16) {
-	m[v] = true
-}
-
-func (m i16map) delete(v int16) {
-	delete(m, v)
+func (m i16map) Include(v interface{}) {
+	switch v := v.(type) {
+	case []int16:
+		for i := len(v) - 1; i > -1; i-- {
+			m[v[i]] = true
+		}
+	case int16:
+		m[v] = true
+	default:
+		panic(v)
+	}
 }
 
 func (m i16map) Each(f interface{}) {
@@ -36,8 +44,6 @@ func (m i16map) Each(f interface{}) {
 				f(k)
 			}
 		}
-	default:
-		panic(f)
 	}
 }
 
@@ -48,10 +54,12 @@ type i16set struct {
 
 func I16Set(v... int16) (r i16set) {
 	r.i16map = make(i16map)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
+}
+
+func (s i16set) Empty() Set {
+	return I16Set()
 }
 
 func (s i16set) String() (t string) {
@@ -63,55 +71,46 @@ func (s i16set) String() (t string) {
 	return elements.String()
 }
 
-func (s i16set) Intersection(o i16set) (r i16set) {
-	r.i16map = make(i16map)
+func (s i16set) Intersection(o Set) Set {
+	r := I16Set()
 	s.Each(func(v int16) {
 		if o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s i16set) Union(o i16set) (r i16set) {
-	r.i16map = make(i16map)
+func (s i16set) Union(o Set) Set {
+	r := I16Set()
 	s.Each(func(v int16) {
-		r.include(v)
+		r.Include(v)
 	})
 	o.Each(func(v int16) {
-		r.include(v)
+		r.Include(v)
 	})
-	return
+	return r
 }
 
-func (s i16set) Difference(o i16set) (r i16set) {
-	r.i16map = make(i16map)
+func (s i16set) Difference(o Set) Set {
+	r := I16Set()
 	s.Each(func(v int16) {
 		if !o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s i16set) SubsetOf(o i16set) (r bool) {
-	r = true
-	s.Each(func(v int16) {
-		if !o.Member(v) {
-			r = false
-			return
+func (s i16set) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v int16) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s i16set) Equal(o i16set) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v int16) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }

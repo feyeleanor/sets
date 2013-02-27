@@ -10,16 +10,24 @@ func (m c64map) Len() int {
 	return len(m)
 }
 
-func (m c64map) Member(i complex64) bool {
-	return m[i]
+func (m c64map) Member(i interface{}) (r bool) {
+	if i, ok := i.(complex64); ok {
+		r = m[i]
+	}
+	return
 }
 
-func (m c64map) include(v complex64) {
-	m[v] = true
-}
-
-func (m c64map) delete(v complex64) {
-	delete(m, v)
+func (m c64map) Include(v interface{}) {
+	switch v := v.(type) {
+	case []complex64:
+		for i := len(v) - 1; i > -1; i-- {
+			m[v[i]] = true
+		}
+	case complex64:
+		m[v] = true
+	default:
+		panic(v)
+	}
 }
 
 func (m c64map) Each(f interface{}) {
@@ -36,8 +44,6 @@ func (m c64map) Each(f interface{}) {
 				f(k)
 			}
 		}
-	default:
-		panic(f)
 	}
 }
 
@@ -57,61 +63,23 @@ type c64set struct {
 
 func C64Set(v... complex64) (r c64set) {
 	r.c64map = make(c64map)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
 }
 
-func (s c64set) Intersection(o c64set) (r c64set) {
-	r.c64map = make(c64map)
-	s.Each(func(v complex64) {
-		if o.Member(v) {
-			r.include(v)
+func (s c64set) Empty() Set {
+	return C64Set()
+}
+
+func (s c64set) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v complex64) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s c64set) Union(o c64set) (r c64set) {
-	r.c64map = make(c64map)
-	s.Each(func(v complex64) {
-		r.include(v)
-	})
-	o.Each(func(v complex64) {
-		r.include(v)
-	})
-	return
-}
-
-func (s c64set) Difference(o c64set) (r c64set) {
-	r.c64map = make(c64map)
-	s.Each(func(v complex64) {
-		if !o.Member(v) {
-			r.include(v)
-		}
-	})
-	return
-}
-
-func (s c64set) SubsetOf(o c64set) (r bool) {
-	r = true
-	s.Each(func(v complex64) {
-		if !o.Member(v) {
-			r = false
-			return
-		}
-	})
-	return
-}
-
-func (s c64set) Equal(o c64set) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v complex64) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }

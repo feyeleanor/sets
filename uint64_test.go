@@ -17,67 +17,6 @@ func TestU64String(t *testing.T) {
 	ConfirmString(U64Set(0, 1, 2, 3, 4), "(0 1 2 3 4)")
 }
 
-func TestU64Intersection(t *testing.T) {
-	ConfirmIntersection := func(s, x, r u64set) {
-		if v := s.Intersection(x); !r.Equal(v) {
-			t.Errorf("%v.Intersection(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmIntersection(U64Set(), U64Set(), U64Set())
-	ConfirmIntersection(U64Set(0), U64Set(1), U64Set())
-	ConfirmIntersection(U64Set(0, 1), U64Set(1, 2), U64Set(1))
-	ConfirmIntersection(U64Set(0, 1, 2), U64Set(1, 2, 3), U64Set(1, 2))
-}
-
-func TestU64Union(t *testing.T) {
-	ConfirmUnion := func(s, x, r u64set) {
-		if v := s.Union(x); !r.Equal(v) {
-			t.Errorf("%v.Union(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmUnion(U64Set(), U64Set(), U64Set())
-	ConfirmUnion(U64Set(0), U64Set(), U64Set(0))
-	ConfirmUnion(U64Set(), U64Set(1), U64Set(1))
-	ConfirmUnion(U64Set(0), U64Set(1), U64Set(0, 1))
-	ConfirmUnion(U64Set(0, 1), U64Set(1, 2), U64Set(0, 1, 2))
-	ConfirmUnion(U64Set(0, 1, 2), U64Set(1, 2, 3), U64Set(0, 1, 2, 3))
-}
-
-func TestU64Difference(t *testing.T) {
-	ConfirmDifference := func(s, x, r u64set) {
-		if v := s.Difference(x); !r.Equal(v) {
-			t.Errorf("%v.Difference(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmDifference(U64Set(), U64Set(), U64Set())
-	ConfirmDifference(U64Set(0), U64Set(), U64Set(0))
-	ConfirmDifference(U64Set(), U64Set(1), U64Set())
-	ConfirmDifference(U64Set(0), U64Set(1), U64Set(0))
-	ConfirmDifference(U64Set(0, 1), U64Set(1, 2), U64Set(0))
-	ConfirmDifference(U64Set(0, 1, 2), U64Set(1, 2, 3), U64Set(0))
-	ConfirmDifference(U64Set(0, 1, 2, 3), U64Set(1, 2, 3), U64Set(0))
-}
-
-func TestU64SubsetOf(t *testing.T) {
-	ConfirmSubsetOf := func(s, x u64set, r bool) {
-		if v := s.SubsetOf(x); r != v {
-			t.Errorf("%v.SubsetOf(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmSubsetOf(U64Set(), U64Set(), true)
-	ConfirmSubsetOf(U64Set(0), U64Set(), false)
-	ConfirmSubsetOf(U64Set(), U64Set(0), true)
-	ConfirmSubsetOf(U64Set(0), U64Set(0), true)
-	ConfirmSubsetOf(U64Set(0), U64Set(1), false)
-	ConfirmSubsetOf(U64Set(0), U64Set(0, 1), true)
-	ConfirmSubsetOf(U64Set(0, 1), U64Set(0, 1), true)
-	ConfirmSubsetOf(U64Set(0, 1, 2), U64Set(0, 1), false)
-}
-
 func TestU64Member(t *testing.T) {
 	ConfirmMember := func(s u64set, x uint64, r bool) {
 		if v := s.Member(x); r != v {

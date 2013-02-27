@@ -32,67 +32,6 @@ func TestEString(t *testing.T) {
 //	ConfirmString(ESet(E0, E1, E2, E3, E4), "(E0 E1 E2 E3 E4)")
 }
 
-func TestEIntersection(t *testing.T) {
-	ConfirmIntersection := func(s, x, r eset) {
-		if v := s.Intersection(x); !r.Equal(v) {
-			t.Errorf("%v.Intersection(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmIntersection(ESet(), ESet(), ESet())
-	ConfirmIntersection(ESet(E0), ESet(E1), ESet())
-	ConfirmIntersection(ESet(E0, E1), ESet(E1, E2), ESet(E1))
-	ConfirmIntersection(ESet(E0, E1, E2), ESet(E1, E2, E3), ESet(E1, E2))
-}
-
-func TestEUnion(t *testing.T) {
-	ConfirmUnion := func(s, x, r eset) {
-		if v := s.Union(x); !r.Equal(v) {
-			t.Errorf("%v.Union(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmUnion(ESet(), ESet(), ESet())
-	ConfirmUnion(ESet(E0), ESet(), ESet(E0))
-	ConfirmUnion(ESet(), ESet(E1), ESet(E1))
-	ConfirmUnion(ESet(E0), ESet(E1), ESet(E0, E1))
-	ConfirmUnion(ESet(E0, E1), ESet(E1, E2), ESet(E0, E1, E2))
-	ConfirmUnion(ESet(E0, E1, E2), ESet(E1, E2, E3), ESet(E0, E1, E2, E3))
-}
-
-func TestEDifference(t *testing.T) {
-	ConfirmDifference := func(s, x, r eset) {
-		if v := s.Difference(x); !r.Equal(v) {
-			t.Errorf("%v.Difference(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmDifference(ESet(), ESet(), ESet())
-	ConfirmDifference(ESet(E0), ESet(), ESet(E0))
-	ConfirmDifference(ESet(), ESet(E1), ESet())
-	ConfirmDifference(ESet(E0), ESet(E1), ESet(E0))
-	ConfirmDifference(ESet(E0, E1), ESet(E1, E2), ESet(E0))
-	ConfirmDifference(ESet(E0, E1, E2), ESet(E1, E2, E3), ESet(E0))
-	ConfirmDifference(ESet(E0, E1, E2, E3), ESet(E1, E2, E3), ESet(E0))
-}
-
-func TestESubsetOf(t *testing.T) {
-	ConfirmSubsetOf := func(s, x eset, r bool) {
-		if v := s.SubsetOf(x); r != v {
-			t.Errorf("%v.SubsetOf(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmSubsetOf(ESet(), ESet(), true)
-	ConfirmSubsetOf(ESet(E0), ESet(), false)
-	ConfirmSubsetOf(ESet(), ESet(E0), true)
-	ConfirmSubsetOf(ESet(E0), ESet(E0), true)
-	ConfirmSubsetOf(ESet(E0), ESet(E1), false)
-	ConfirmSubsetOf(ESet(E0), ESet(E0, E1), true)
-	ConfirmSubsetOf(ESet(E0, E1), ESet(E0, E1), true)
-	ConfirmSubsetOf(ESet(E0, E1, E2), ESet(E0, E1), false)
-}
-
 func TestEMember(t *testing.T) {
 	ConfirmMember := func(s eset, x error, r bool) {
 		if v := s.Member(x); r != v {

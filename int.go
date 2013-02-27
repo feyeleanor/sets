@@ -10,16 +10,24 @@ func (m imap) Len() int {
 	return len(m)
 }
 
-func (m imap) Member(i int) bool {
-	return m[i]
+func (m imap) Member(i interface{}) (r bool) {
+	if i, ok := i.(int); ok {
+		r = m[i]
+	}
+	return
 }
 
-func (m imap) include(v int) {
-	m[v] = true
-}
-
-func (m imap) delete(v int) {
-	delete(m, v)
+func (m imap) Include(v interface{}) {
+	switch v := v.(type) {
+	case []int:
+		for i := len(v) - 1; i > -1; i-- {
+			m[v[i]] = true
+		}
+	case int:
+		m[v] = true
+	default:
+		panic(v)
+	}
 }
 
 func (m imap) Each(f interface{}) {
@@ -36,8 +44,6 @@ func (m imap) Each(f interface{}) {
 				f(k)
 			}
 		}
-	default:
-		panic(f)
 	}
 }
 
@@ -48,10 +54,12 @@ type iset struct {
 
 func ISet(v... int) (r iset) {
 	r.imap = make(imap)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
+}
+
+func (s iset) Empty() Set {
+	return ISet()
 }
 
 func (s iset) String() (t string) {
@@ -63,55 +71,46 @@ func (s iset) String() (t string) {
 	return elements.String()
 }
 
-func (s iset) Intersection(o iset) (r iset) {
-	r.imap = make(imap)
+func (s iset) Intersection(o Set) Set {
+	r := ISet()
 	s.Each(func(v int) {
 		if o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s iset) Union(o iset) (r iset) {
-	r.imap = make(imap)
+func (s iset) Union(o Set) Set {
+	r := ISet()
 	s.Each(func(v int) {
-		r.include(v)
+		r.Include(v)
 	})
 	o.Each(func(v int) {
-		r.include(v)
+		r.Include(v)
 	})
-	return
+	return r
 }
 
-func (s iset) Difference(o iset) (r iset) {
-	r.imap = make(imap)
+func (s iset) Difference(o Set) Set {
+	r := ISet()
 	s.Each(func(v int) {
 		if !o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s iset) SubsetOf(o iset) (r bool) {
-	r = true
-	s.Each(func(v int) {
-		if !o.Member(v) {
-			r = false
-			return
+func (s iset) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v int) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s iset) Equal(o iset) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v int) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }

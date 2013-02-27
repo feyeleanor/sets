@@ -17,67 +17,6 @@ func TestI32String(t *testing.T) {
 	ConfirmString(I32Set(0, 1, 2, 3, 4), "(0 1 2 3 4)")
 }
 
-func TestI32Intersection(t *testing.T) {
-	ConfirmIntersection := func(s, x, r i32set) {
-		if v := s.Intersection(x); !r.Equal(v) {
-			t.Errorf("%v.Intersection(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmIntersection(I32Set(), I32Set(), I32Set())
-	ConfirmIntersection(I32Set(0), I32Set(1), I32Set())
-	ConfirmIntersection(I32Set(0, 1), I32Set(1, 2), I32Set(1))
-	ConfirmIntersection(I32Set(0, 1, 2), I32Set(1, 2, 3), I32Set(1, 2))
-}
-
-func TestI32Union(t *testing.T) {
-	ConfirmUnion := func(s, x, r i32set) {
-		if v := s.Union(x); !r.Equal(v) {
-			t.Errorf("%v.Union(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmUnion(I32Set(), I32Set(), I32Set())
-	ConfirmUnion(I32Set(0), I32Set(), I32Set(0))
-	ConfirmUnion(I32Set(), I32Set(1), I32Set(1))
-	ConfirmUnion(I32Set(0), I32Set(1), I32Set(0, 1))
-	ConfirmUnion(I32Set(0, 1), I32Set(1, 2), I32Set(0, 1, 2))
-	ConfirmUnion(I32Set(0, 1, 2), I32Set(1, 2, 3), I32Set(0, 1, 2, 3))
-}
-
-func TestI32Difference(t *testing.T) {
-	ConfirmDifference := func(s, x, r i32set) {
-		if v := s.Difference(x); !r.Equal(v) {
-			t.Errorf("%v.Difference(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmDifference(I32Set(), I32Set(), I32Set())
-	ConfirmDifference(I32Set(0), I32Set(), I32Set(0))
-	ConfirmDifference(I32Set(), I32Set(1), I32Set())
-	ConfirmDifference(I32Set(0), I32Set(1), I32Set(0))
-	ConfirmDifference(I32Set(0, 1), I32Set(1, 2), I32Set(0))
-	ConfirmDifference(I32Set(0, 1, 2), I32Set(1, 2, 3), I32Set(0))
-	ConfirmDifference(I32Set(0, 1, 2, 3), I32Set(1, 2, 3), I32Set(0))
-}
-
-func TestI32SubsetOf(t *testing.T) {
-	ConfirmSubsetOf := func(s, x i32set, r bool) {
-		if v := s.SubsetOf(x); r != v {
-			t.Errorf("%v.SubsetOf(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmSubsetOf(I32Set(), I32Set(), true)
-	ConfirmSubsetOf(I32Set(0), I32Set(), false)
-	ConfirmSubsetOf(I32Set(), I32Set(0), true)
-	ConfirmSubsetOf(I32Set(0), I32Set(0), true)
-	ConfirmSubsetOf(I32Set(0), I32Set(1), false)
-	ConfirmSubsetOf(I32Set(0), I32Set(0, 1), true)
-	ConfirmSubsetOf(I32Set(0, 1), I32Set(0, 1), true)
-	ConfirmSubsetOf(I32Set(0, 1, 2), I32Set(0, 1), false)
-}
-
 func TestI32Member(t *testing.T) {
 	ConfirmMember := func(s i32set, x int32, r bool) {
 		if v := s.Member(x); r != v {

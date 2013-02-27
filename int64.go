@@ -10,16 +10,24 @@ func (m i64map) Len() int {
 	return len(m)
 }
 
-func (m i64map) Member(i int64) bool {
-	return m[i]
+func (m i64map) Member(i interface{}) (r bool) {
+	if i, ok := i.(int64); ok {
+		r = m[i]
+	}
+	return
 }
 
-func (m i64map) include(v int64) {
-	m[v] = true
-}
-
-func (m i64map) delete(v int64) {
-	delete(m, v)
+func (m i64map) Include(v interface{}) {
+	switch v := v.(type) {
+	case []int64:
+		for i := len(v) - 1; i > -1; i-- {
+			m[v[i]] = true
+		}
+	case int64:
+		m[v] = true
+	default:
+		panic(v)
+	}
 }
 
 func (m i64map) Each(f interface{}) {
@@ -48,10 +56,12 @@ type i64set struct {
 
 func I64Set(v... int64) (r i64set) {
 	r.i64map = make(i64map)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
+}
+
+func (s i64set) Empty() Set {
+	return I64Set()
 }
 
 func (s i64set) String() (t string) {
@@ -63,55 +73,46 @@ func (s i64set) String() (t string) {
 	return elements.String()
 }
 
-func (s i64set) Intersection(o i64set) (r i64set) {
-	r.i64map = make(i64map)
+func (s i64set) Intersection(o Set) Set {
+	r := I64Set()
 	s.Each(func(v int64) {
 		if o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s i64set) Union(o i64set) (r i64set) {
-	r.i64map = make(i64map)
+func (s i64set) Union(o Set) Set {
+	r := I64Set()
 	s.Each(func(v int64) {
-		r.include(v)
+		r.Include(v)
 	})
 	o.Each(func(v int64) {
-		r.include(v)
+		r.Include(v)
 	})
-	return
+	return r
 }
 
-func (s i64set) Difference(o i64set) (r i64set) {
-	r.i64map = make(i64map)
+func (s i64set) Difference(o Set) Set {
+	r := I64Set()
 	s.Each(func(v int64) {
 		if !o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s i64set) SubsetOf(o i64set) (r bool) {
-	r = true
-	s.Each(func(v int64) {
-		if !o.Member(v) {
-			r = false
-			return
+func (s i64set) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v int64) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s i64set) Equal(o i64set) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v int64) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }

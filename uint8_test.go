@@ -17,67 +17,6 @@ func TestU8String(t *testing.T) {
 	ConfirmString(U8Set(0, 1, 2, 3, 4), "(0 1 2 3 4)")
 }
 
-func TestU8Intersection(t *testing.T) {
-	ConfirmIntersection := func(s, x, r u8set) {
-		if v := s.Intersection(x); !r.Equal(v) {
-			t.Errorf("%v.Intersection(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmIntersection(U8Set(), U8Set(), U8Set())
-	ConfirmIntersection(U8Set(0), U8Set(1), U8Set())
-	ConfirmIntersection(U8Set(0, 1), U8Set(1, 2), U8Set(1))
-	ConfirmIntersection(U8Set(0, 1, 2), U8Set(1, 2, 3), U8Set(1, 2))
-}
-
-func TestU8Union(t *testing.T) {
-	ConfirmUnion := func(s, x, r u8set) {
-		if v := s.Union(x); !r.Equal(v) {
-			t.Errorf("%v.Union(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmUnion(U8Set(), U8Set(), U8Set())
-	ConfirmUnion(U8Set(0), U8Set(), U8Set(0))
-	ConfirmUnion(U8Set(), U8Set(1), U8Set(1))
-	ConfirmUnion(U8Set(0), U8Set(1), U8Set(0, 1))
-	ConfirmUnion(U8Set(0, 1), U8Set(1, 2), U8Set(0, 1, 2))
-	ConfirmUnion(U8Set(0, 1, 2), U8Set(1, 2, 3), U8Set(0, 1, 2, 3))
-}
-
-func TestU8Difference(t *testing.T) {
-	ConfirmDifference := func(s, x, r u8set) {
-		if v := s.Difference(x); !r.Equal(v) {
-			t.Errorf("%v.Difference(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmDifference(U8Set(), U8Set(), U8Set())
-	ConfirmDifference(U8Set(0), U8Set(), U8Set(0))
-	ConfirmDifference(U8Set(), U8Set(1), U8Set())
-	ConfirmDifference(U8Set(0), U8Set(1), U8Set(0))
-	ConfirmDifference(U8Set(0, 1), U8Set(1, 2), U8Set(0))
-	ConfirmDifference(U8Set(0, 1, 2), U8Set(1, 2, 3), U8Set(0))
-	ConfirmDifference(U8Set(0, 1, 2, 3), U8Set(1, 2, 3), U8Set(0))
-}
-
-func TestU8SubsetOf(t *testing.T) {
-	ConfirmSubsetOf := func(s, x u8set, r bool) {
-		if v := s.SubsetOf(x); r != v {
-			t.Errorf("%v.SubsetOf(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmSubsetOf(U8Set(), U8Set(), true)
-	ConfirmSubsetOf(U8Set(0), U8Set(), false)
-	ConfirmSubsetOf(U8Set(), U8Set(0), true)
-	ConfirmSubsetOf(U8Set(0), U8Set(0), true)
-	ConfirmSubsetOf(U8Set(0), U8Set(1), false)
-	ConfirmSubsetOf(U8Set(0), U8Set(0, 1), true)
-	ConfirmSubsetOf(U8Set(0, 1), U8Set(0, 1), true)
-	ConfirmSubsetOf(U8Set(0, 1, 2), U8Set(0, 1), false)
-}
-
 func TestU8Member(t *testing.T) {
 	ConfirmMember := func(s u8set, x uint8, r bool) {
 		if v := s.Member(x); r != v {

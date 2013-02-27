@@ -17,67 +17,6 @@ func TestF64String(t *testing.T) {
 	ConfirmString(F64Set(0, 1, 2, 3, 4), "(0 1 2 3 4)")
 }
 
-func TestF64Intersection(t *testing.T) {
-	ConfirmIntersection := func(s, x, r f64set) {
-		if v := s.Intersection(x); !r.Equal(v) {
-			t.Errorf("%v.Intersection(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmIntersection(F64Set(), F64Set(), F64Set())
-	ConfirmIntersection(F64Set(0), F64Set(1), F64Set())
-	ConfirmIntersection(F64Set(0, 1), F64Set(1, 2), F64Set(1))
-	ConfirmIntersection(F64Set(0, 1, 2), F64Set(1, 2, 3), F64Set(1, 2))
-}
-
-func TestF64Union(t *testing.T) {
-	ConfirmUnion := func(s, x, r f64set) {
-		if v := s.Union(x); !r.Equal(v) {
-			t.Errorf("%v.Union(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmUnion(F64Set(), F64Set(), F64Set())
-	ConfirmUnion(F64Set(0), F64Set(), F64Set(0))
-	ConfirmUnion(F64Set(), F64Set(1), F64Set(1))
-	ConfirmUnion(F64Set(0), F64Set(1), F64Set(0, 1))
-	ConfirmUnion(F64Set(0, 1), F64Set(1, 2), F64Set(0, 1, 2))
-	ConfirmUnion(F64Set(0, 1, 2), F64Set(1, 2, 3), F64Set(0, 1, 2, 3))
-}
-
-func TestF64Difference(t *testing.T) {
-	ConfirmDifference := func(s, x, r f64set) {
-		if v := s.Difference(x); !r.Equal(v) {
-			t.Errorf("%v.Difference(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmDifference(F64Set(), F64Set(), F64Set())
-	ConfirmDifference(F64Set(0), F64Set(), F64Set(0))
-	ConfirmDifference(F64Set(), F64Set(1), F64Set())
-	ConfirmDifference(F64Set(0), F64Set(1), F64Set(0))
-	ConfirmDifference(F64Set(0, 1), F64Set(1, 2), F64Set(0))
-	ConfirmDifference(F64Set(0, 1, 2), F64Set(1, 2, 3), F64Set(0))
-	ConfirmDifference(F64Set(0, 1, 2, 3), F64Set(1, 2, 3), F64Set(0))
-}
-
-func TestF64SubsetOf(t *testing.T) {
-	ConfirmSubsetOf := func(s, x f64set, r bool) {
-		if v := s.SubsetOf(x); r != v {
-			t.Errorf("%v.SubsetOf(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmSubsetOf(F64Set(), F64Set(), true)
-	ConfirmSubsetOf(F64Set(0), F64Set(), false)
-	ConfirmSubsetOf(F64Set(), F64Set(0), true)
-	ConfirmSubsetOf(F64Set(0), F64Set(0), true)
-	ConfirmSubsetOf(F64Set(0), F64Set(1), false)
-	ConfirmSubsetOf(F64Set(0), F64Set(0, 1), true)
-	ConfirmSubsetOf(F64Set(0, 1), F64Set(0, 1), true)
-	ConfirmSubsetOf(F64Set(0, 1, 2), F64Set(0, 1), false)
-}
-
 func TestF64Member(t *testing.T) {
 	ConfirmMember := func(s f64set, x float64, r bool) {
 		if v := s.Member(x); r != v {

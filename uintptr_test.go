@@ -17,67 +17,6 @@ func TestAString(t *testing.T) {
 	ConfirmString(ASet(0, 1, 2, 3, 4), "(0 1 2 3 4)")
 }
 
-func TestAIntersection(t *testing.T) {
-	ConfirmIntersection := func(s, x, r aset) {
-		if v := s.Intersection(x); !r.Equal(v) {
-			t.Errorf("%v.Intersection(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmIntersection(ASet(), ASet(), ASet())
-	ConfirmIntersection(ASet(0), ASet(1), ASet())
-	ConfirmIntersection(ASet(0, 1), ASet(1, 2), ASet(1))
-	ConfirmIntersection(ASet(0, 1, 2), ASet(1, 2, 3), ASet(1, 2))
-}
-
-func TestAUnion(t *testing.T) {
-	ConfirmUnion := func(s, x, r aset) {
-		if v := s.Union(x); !r.Equal(v) {
-			t.Errorf("%v.Union(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmUnion(ASet(), ASet(), ASet())
-	ConfirmUnion(ASet(0), ASet(), ASet(0))
-	ConfirmUnion(ASet(), ASet(1), ASet(1))
-	ConfirmUnion(ASet(0), ASet(1), ASet(0, 1))
-	ConfirmUnion(ASet(0, 1), ASet(1, 2), ASet(0, 1, 2))
-	ConfirmUnion(ASet(0, 1, 2), ASet(1, 2, 3), ASet(0, 1, 2, 3))
-}
-
-func TestADifference(t *testing.T) {
-	ConfirmDifference := func(s, x, r aset) {
-		if v := s.Difference(x); !r.Equal(v) {
-			t.Errorf("%v.Difference(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmDifference(ASet(), ASet(), ASet())
-	ConfirmDifference(ASet(0), ASet(), ASet(0))
-	ConfirmDifference(ASet(), ASet(1), ASet())
-	ConfirmDifference(ASet(0), ASet(1), ASet(0))
-	ConfirmDifference(ASet(0, 1), ASet(1, 2), ASet(0))
-	ConfirmDifference(ASet(0, 1, 2), ASet(1, 2, 3), ASet(0))
-	ConfirmDifference(ASet(0, 1, 2, 3), ASet(1, 2, 3), ASet(0))
-}
-
-func TestASubsetOf(t *testing.T) {
-	ConfirmSubsetOf := func(s, x aset, r bool) {
-		if v := s.SubsetOf(x); r != v {
-			t.Errorf("%v.SubsetOf(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmSubsetOf(ASet(), ASet(), true)
-	ConfirmSubsetOf(ASet(0), ASet(), false)
-	ConfirmSubsetOf(ASet(), ASet(0), true)
-	ConfirmSubsetOf(ASet(0), ASet(0), true)
-	ConfirmSubsetOf(ASet(0), ASet(1), false)
-	ConfirmSubsetOf(ASet(0), ASet(0, 1), true)
-	ConfirmSubsetOf(ASet(0, 1), ASet(0, 1), true)
-	ConfirmSubsetOf(ASet(0, 1, 2), ASet(0, 1), false)
-}
-
 func TestAMember(t *testing.T) {
 	ConfirmMember := func(s aset, x uintptr, r bool) {
 		if v := s.Member(x); r != v {

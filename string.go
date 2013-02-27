@@ -10,16 +10,24 @@ func (m smap) Len() int {
 	return len(m)
 }
 
-func (m smap) Member(s string) bool {
-	return m[s]
+func (m smap) Member(i interface{}) (r bool) {
+	if i, ok := i.(string); ok {
+		r = m[i]
+	}
+	return
 }
 
-func (m smap) include(v string) {
-	m[v] = true
-}
-
-func (m smap) delete(v string) {
-	delete(m, v)
+func (m smap) Include(v interface{}) {
+	switch v := v.(type) {
+	case []string:
+		for i := len(v) - 1; i > -1; i-- {
+			m[v[i]] = true
+		}
+	case string:
+		m[v] = true
+	default:
+		panic(v)
+	}
 }
 
 func (m smap) Each(f interface{}) {
@@ -36,8 +44,6 @@ func (m smap) Each(f interface{}) {
 				f(k)
 			}
 		}
-	default:
-		panic(f)
 	}
 }
 
@@ -48,10 +54,12 @@ type sset struct {
 
 func SSet(v... string) (r sset) {
 	r.smap = make(smap)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
+}
+
+func (s sset) Empty() Set {
+	return SSet()
 }
 
 func (s sset) String() (t string) {
@@ -63,55 +71,46 @@ func (s sset) String() (t string) {
 	return elements.String()
 }
 
-func (s sset) Intersection(o sset) (r sset) {
-	r.smap = make(smap)
+func (s sset) Intersection(o Set) Set {
+	r := SSet()
 	s.Each(func(v string) {
 		if o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s sset) Union(o sset) (r sset) {
-	r.smap = make(smap)
+func (s sset) Union(o Set) Set {
+	r := SSet()
 	s.Each(func(v string) {
-		r.include(v)
+		r.Include(v)
 	})
 	o.Each(func(v string) {
-		r.include(v)
+		r.Include(v)
 	})
-	return
+	return r
 }
 
-func (s sset) Difference(o sset) (r sset) {
-	r.smap = make(smap)
+func (s sset) Difference(o Set) Set {
+	r := SSet()
 	s.Each(func(v string) {
 		if !o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s sset) SubsetOf(o sset) (r bool) {
-	r = true
-	s.Each(func(v string) {
-		if !o.Member(v) {
-			r = false
-			return
+func (s sset) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v string) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s sset) Equal(o sset) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v string) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }

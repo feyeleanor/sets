@@ -17,67 +17,6 @@ func TestU16String(t *testing.T) {
 	ConfirmString(U16Set(0, 1, 2, 3, 4), "(0 1 2 3 4)")
 }
 
-func TestU16Intersection(t *testing.T) {
-	ConfirmIntersection := func(s, x, r u16set) {
-		if v := s.Intersection(x); !r.Equal(v) {
-			t.Errorf("%v.Intersection(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmIntersection(U16Set(), U16Set(), U16Set())
-	ConfirmIntersection(U16Set(0), U16Set(1), U16Set())
-	ConfirmIntersection(U16Set(0, 1), U16Set(1, 2), U16Set(1))
-	ConfirmIntersection(U16Set(0, 1, 2), U16Set(1, 2, 3), U16Set(1, 2))
-}
-
-func TestU16Union(t *testing.T) {
-	ConfirmUnion := func(s, x, r u16set) {
-		if v := s.Union(x); !r.Equal(v) {
-			t.Errorf("%v.Union(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmUnion(U16Set(), U16Set(), U16Set())
-	ConfirmUnion(U16Set(0), U16Set(), U16Set(0))
-	ConfirmUnion(U16Set(), U16Set(1), U16Set(1))
-	ConfirmUnion(U16Set(0), U16Set(1), U16Set(0, 1))
-	ConfirmUnion(U16Set(0, 1), U16Set(1, 2), U16Set(0, 1, 2))
-	ConfirmUnion(U16Set(0, 1, 2), U16Set(1, 2, 3), U16Set(0, 1, 2, 3))
-}
-
-func TestU16Difference(t *testing.T) {
-	ConfirmDifference := func(s, x, r u16set) {
-		if v := s.Difference(x); !r.Equal(v) {
-			t.Errorf("%v.Difference(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmDifference(U16Set(), U16Set(), U16Set())
-	ConfirmDifference(U16Set(0), U16Set(), U16Set(0))
-	ConfirmDifference(U16Set(), U16Set(1), U16Set())
-	ConfirmDifference(U16Set(0), U16Set(1), U16Set(0))
-	ConfirmDifference(U16Set(0, 1), U16Set(1, 2), U16Set(0))
-	ConfirmDifference(U16Set(0, 1, 2), U16Set(1, 2, 3), U16Set(0))
-	ConfirmDifference(U16Set(0, 1, 2, 3), U16Set(1, 2, 3), U16Set(0))
-}
-
-func TestU16SubsetOf(t *testing.T) {
-	ConfirmSubsetOf := func(s, x u16set, r bool) {
-		if v := s.SubsetOf(x); r != v {
-			t.Errorf("%v.SubsetOf(%v) expected %v but produced %v", s, x, r, v)
-		}
-	}
-
-	ConfirmSubsetOf(U16Set(), U16Set(), true)
-	ConfirmSubsetOf(U16Set(0), U16Set(), false)
-	ConfirmSubsetOf(U16Set(), U16Set(0), true)
-	ConfirmSubsetOf(U16Set(0), U16Set(0), true)
-	ConfirmSubsetOf(U16Set(0), U16Set(1), false)
-	ConfirmSubsetOf(U16Set(0), U16Set(0, 1), true)
-	ConfirmSubsetOf(U16Set(0, 1), U16Set(0, 1), true)
-	ConfirmSubsetOf(U16Set(0, 1, 2), U16Set(0, 1), false)
-}
-
 func TestU16Member(t *testing.T) {
 	ConfirmMember := func(s u16set, x uint16, r bool) {
 		if v := s.Member(x); r != v {

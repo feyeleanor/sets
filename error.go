@@ -10,16 +10,24 @@ func (m emap) Len() int {
 	return len(m)
 }
 
-func (m emap) Member(i error) bool {
-	return m[i]
+func (m emap) Member(i interface{}) (r bool) {
+	if i, ok := i.(error); ok {
+		r = m[i]
+	}
+	return
 }
 
-func (m emap) include(v error) {
-	m[v] = true
-}
-
-func (m emap) delete(v error) {
-	delete(m, v)
+func (m emap) Include(v interface{}) {
+	switch v := v.(type) {
+	case []error:
+		for i := len(v) - 1; i > -1; i-- {
+			m[v[i]] = true
+		}
+	case error:
+		m[v] = true
+	default:
+		panic(v)
+	}
 }
 
 func (m emap) Each(f interface{}) {
@@ -36,8 +44,6 @@ func (m emap) Each(f interface{}) {
 				f(k)
 			}
 		}
-	default:
-		panic(f)
 	}
 }
 
@@ -57,61 +63,54 @@ type eset struct {
 
 func ESet(v... error) (r eset) {
 	r.emap = make(emap)
-	for i := len(v) - 1; i > -1; i-- {
-		r.include(v[i])
-	}
+	r.Include(v)
 	return
 }
 
-func (s eset) Intersection(o eset) (r eset) {
-	r.emap = make(emap)
+func (s eset) Empty() Set {
+	return ESet()
+}
+
+func (s eset) Intersection(o Set) Set {
+	r := ESet()
 	s.Each(func(v error) {
 		if o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s eset) Union(o eset) (r eset) {
-	r.emap = make(emap)
+func (s eset) Union(o Set) Set {
+	r := ESet()
 	s.Each(func(v error) {
-		r.include(v)
+		r.Include(v)
 	})
 	o.Each(func(v error) {
-		r.include(v)
+		r.Include(v)
 	})
-	return
+	return r
 }
 
-func (s eset) Difference(o eset) (r eset) {
-	r.emap = make(emap)
+func (s eset) Difference(o Set) Set {
+	r := ESet()
 	s.Each(func(v error) {
 		if !o.Member(v) {
-			r.include(v)
+			r.Include(v)
 		}
 	})
-	return
+	return r
 }
 
-func (s eset) SubsetOf(o eset) (r bool) {
-	r = true
-	s.Each(func(v error) {
-		if !o.Member(v) {
-			r = false
-			return
+func (s eset) Equal(o interface{}) (r bool) {
+	if o, ok := o.(Set); ok {
+		if r = s.Len() == o.Len(); r {
+			s.Each(func(v error) {
+				if !o.Member(v) {
+					r = false
+				}
+			})
 		}
-	})
-	return
-}
-
-func (s eset) Equal(o eset) (r bool) {
-	if r = s.Len() == o.Len(); r {
-		s.Each(func(v error) {
-			if !o.Member(v) {
-				r = false
-			}
-		})
 	}
 	return
 }
