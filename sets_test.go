@@ -275,7 +275,7 @@ func TestIntersection(t *testing.T) {
 func TestUnion(t *testing.T) {
 	ConfirmUnion := func(s, x Set, r Equatable) {
 		if v := Union(s, x); !r.Equal(v) {
-			t.Errorf("%v.Union(%v, %v) expected %v but produced %v", s, x, r, v)
+			t.Errorf("Union(%v, %v) expected %v but produced %v", s, x, r, v)
 		}
 	}
 
